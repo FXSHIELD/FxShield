@@ -1,9 +1,9 @@
-// FILE: src/fxShield/UX/SystemMonitorService.java
-package fxShield.UX;
+// FILE: src/fx.shield.cs/UX/SystemMonitorService.java
+package fx.shield.cs.UX;
 
-import fxShield.GPU.GPUStabilizer;
-import fxShield.GPU.GpuUsageProvider;
-import fxShield.GPU.HybridGpuUsageProvider;
+import fx.shield.cs.GPU.GPUStabilizer;
+import fx.shield.cs.GPU.GpuUsageProvider;
+import fx.shield.cs.GPU.HybridGpuUsageProvider;
 import oshi.SystemInfo;
 import oshi.hardware.*;
 import oshi.software.os.FileSystem;
@@ -223,11 +223,11 @@ public final class SystemMonitorService {
         if (exec != null) return;
 
         if (isWindows) {
-            new Thread(this::loadDiskMediaTypesWindows, "fxShield-disk-detect").start();
+            new Thread(this::loadDiskMediaTypesWindows, "fx.shield.cs-disk-detect").start();
         }
 
         exec = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "fxShield-monitor");
+            Thread t = new Thread(r, "fx.shield.cs-monitor");
             t.setDaemon(true);
             return t;
         });
@@ -323,7 +323,7 @@ public final class SystemMonitorService {
                     break; // ✅ do not keep interrupt-flag + busy-loop
                 }
             }
-        }, "fxShield-gpu");
+        }, "fx.shield.cs-gpu");
 
         gpuThread.setDaemon(true);
         gpuThread.start();

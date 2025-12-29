@@ -1,7 +1,7 @@
-package fxShield.DISK;
+package fx.shield.cs.DISK;
 
-import fxShield.UX.SystemMonitorService;
-import fxShield.UI.BaseCard;
+import fx.shield.cs.UX.SystemMonitorService;
+import fx.shield.cs.UI.BaseCard;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

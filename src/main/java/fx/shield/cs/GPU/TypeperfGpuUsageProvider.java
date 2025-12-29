@@ -1,4 +1,4 @@
-package fxShield.GPU;
+package fx.shield.cs.GPU;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -6,6 +6,34 @@ import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * GPU usage provider using Windows typeperf command-line tool.
+ *
+ * <p>This provider executes the Windows {@code typeperf} command to read GPU
+ * utilization from performance counters. It is the slowest method but works
+ * as a fallback when native libraries are unavailable.
+ *
+ * <p>Features:
+ * <ul>
+ *   <li>Process-based monitoring using typeperf.exe</li>
+ *   <li>Works with all GPU vendors on Windows</li>
+ *   <li>No native library dependencies</li>
+ *   <li>Parses CSV output to aggregate GPU engine utilization</li>
+ *   <li>Requires 2 samples for rate-based counters</li>
+ * </ul>
+ *
+ * <p>Performance considerations:
+ * <ul>
+ *   <li>Spawns a new process for each read (slow)</li>
+ *   <li>5-second timeout per read</li>
+ *   <li>Best used as a last-resort fallback</li>
+ * </ul>
+ *
+ * <p>Counter path: {@code \\GPU Engine(*)\\Utilization Percentage}
+ *
+ * @see GpuUsageProvider
+ * @since 1.0
+ */
 public final class TypeperfGpuUsageProvider implements GpuUsageProvider {
 
     private static final String COUNTER = "\\\\GPU Engine(*)\\\\Utilization Percentage";

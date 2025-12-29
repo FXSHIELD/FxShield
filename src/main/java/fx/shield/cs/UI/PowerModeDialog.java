@@ -1,4 +1,4 @@
-package fxShield.UI;
+package fx.shield.cs.UI;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;

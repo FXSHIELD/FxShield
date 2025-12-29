@@ -1,4 +1,4 @@
-package fxShield.WIN;
+package fx.shield.cs.WIN;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

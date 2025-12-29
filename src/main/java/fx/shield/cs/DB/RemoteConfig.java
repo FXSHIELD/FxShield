@@ -1,4 +1,4 @@
-package fxShield.DB;
+package fx.shield.cs.DB;
 
 import java.io.Serial;
 import java.io.Serializable;

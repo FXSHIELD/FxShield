@@ -1,4 +1,4 @@
-package fxShield.DB;
+package fx.shield.cs.DB;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -16,6 +16,30 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.zip.GZIPInputStream;
 
+/**
+ * Service for fetching remote configuration from Firebase Firestore.
+ *
+ * <p>This service provides:
+ * <ul>
+ *   <li>HTTP-based configuration fetching with retry logic</li>
+ *   <li>ETag-based caching to minimize network traffic</li>
+ *   <li>GZIP decompression support</li>
+ *   <li>Graceful fallback to cached configuration on errors</li>
+ *   <li>Timeout protection for network requests</li>
+ * </ul>
+ *
+ * <p>The service fetches configuration including:
+ * <ul>
+ *   <li>Application status and version information</li>
+ *   <li>PowerShell scripts for system optimization</li>
+ *   <li>Update management settings</li>
+ * </ul>
+ *
+ * <p>Thread-safe: Uses volatile fields for cache management.
+ *
+ * @see RemoteConfig
+ * @since 1.0
+ */
 public final class RemoteConfigService {
 
     private static final String DEFAULT_CONFIG_URL =
@@ -52,14 +76,28 @@ public final class RemoteConfigService {
     private volatile String cachedEtag;
     private volatile RemoteConfig cachedConfig;
 
+    /**
+     * Creates a new RemoteConfigService with the default configuration URL.
+     */
     public RemoteConfigService() {
         this(DEFAULT_CONFIG_URL);
     }
 
+    /**
+     * Creates a new RemoteConfigService with a custom configuration URL.
+     *
+     * @param configUrl the Firebase Firestore document URL
+     */
     public RemoteConfigService(String configUrl) {
         this(HttpClient.newBuilder().connectTimeout(CONNECT_TIMEOUT).build(), configUrl);
     }
 
+    /**
+     * Creates a new RemoteConfigService with a custom HTTP client and configuration URL.
+     *
+     * @param client the HTTP client to use for requests (null creates a default client)
+     * @param configUrl the Firebase Firestore document URL (null uses default)
+     */
     public RemoteConfigService(HttpClient client, String configUrl) {
         this.httpClient = (client != null)
                 ? client
@@ -70,6 +108,20 @@ public final class RemoteConfigService {
                 : configUrl.trim();
     }
 
+    /**
+     * Fetches the remote configuration from Firebase Firestore.
+     *
+     * <p>This method:
+     * <ul>
+     *   <li>Uses ETag-based caching to avoid unnecessary downloads</li>
+     *   <li>Retries transient failures (429, 5xx) with exponential backoff</li>
+     *   <li>Returns cached configuration on errors or 304 Not Modified</li>
+     *   <li>Handles GZIP-compressed responses automatically</li>
+     *   <li>Parses Firestore document format into RemoteConfig object</li>
+     * </ul>
+     *
+     * @return the fetched configuration, or cached configuration if unavailable, or null if never fetched
+     */
     public RemoteConfig fetchConfig() {
         HttpRequest.Builder rb = HttpRequest.newBuilder()
                 .uri(URI.create(configUrl))

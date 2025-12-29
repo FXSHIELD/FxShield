@@ -1,13 +1,13 @@
-package fxShield.UX;
+package fx.shield.cs.UX;
 
-import fxShield.DB.RemoteConfig;
-import fxShield.DB.RemoteConfigService;
-import fxShield.DISK.PhysicalDiskCard;
-import fxShield.DISK.PhysicalDiskSwitcher;
-import fxShield.UI.*;
-import fxShield.WIN.AutomationService;
-import fxShield.WIN.FxSettings;
-import fxShield.WIN.WindowsUtils;
+import fx.shield.cs.DB.RemoteConfig;
+import fx.shield.cs.DB.RemoteConfigService;
+import fx.shield.cs.DISK.PhysicalDiskCard;
+import fx.shield.cs.DISK.PhysicalDiskSwitcher;
+import fx.shield.cs.UI.*;
+import fx.shield.cs.WIN.AutomationService;
+import fx.shield.cs.WIN.FxSettings;
+import fx.shield.cs.WIN.WindowsUtils;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
@@ -181,7 +181,7 @@ public final class DashBoardPage extends Application {
 
                 showDashboardAndCloseSplash(finalCfg, startMinimized);
             });
-        }, "fxShield-startup-config");
+        }, "fx.shield.cs-startup-config");
 
         t.setDaemon(true);
         t.start();
@@ -547,7 +547,7 @@ public final class DashBoardPage extends Application {
                     disksRow.getChildren().add(err);
                 });
             }
-        }, "fxShield-ui-init").start();
+        }, "fx.shield.cs-ui-init").start();
 
         stage.setOnCloseRequest(e -> hardExit());
     }
@@ -563,7 +563,7 @@ public final class DashBoardPage extends Application {
 
         java.awt.PopupMenu popup = new java.awt.PopupMenu();
 
-        java.awt.MenuItem showItem = new java.awt.MenuItem("Show FxShield");
+        java.awt.MenuItem showItem = new java.awt.MenuItem("Show fx.shield.cs");
         showItem.addActionListener(e -> Platform.runLater(() -> {
             stage.setIconified(false);
             stage.show();
@@ -577,7 +577,7 @@ public final class DashBoardPage extends Application {
         popup.addSeparator();
         popup.add(exitItem);
 
-        java.awt.TrayIcon trayIcon = new java.awt.TrayIcon(image, "FxShield", popup);
+        java.awt.TrayIcon trayIcon = new java.awt.TrayIcon(image, "fx.shield.cs", popup);
         trayIcon.setImageAutoSize(true);
         trayIcon.addActionListener(e -> Platform.runLater(() -> {
             stage.setIconified(false);
@@ -728,7 +728,7 @@ public final class DashBoardPage extends Application {
                 }
             });
 
-        }, "fxShield-db-" + key.name()).start();
+        }, "fx.shield.cs-db-" + key.name()).start();
     }
 
     private void runFreeRamFromDb() {
@@ -781,7 +781,7 @@ public final class DashBoardPage extends Application {
                 dialog.setDone(done);
             });
 
-        }, "fxShield-db-FreeRAM").start();
+        }, "fx.shield.cs-db-FreeRAM").start();
     }
 
     private void runAllInOneFromDb() {
@@ -824,7 +824,7 @@ public final class DashBoardPage extends Application {
                 Platform.runLater(() -> dialog.setFailed("Optimization package failed."));
             }
 
-        }, "fxShield-db-allInOne").start();
+        }, "fx.shield.cs-db-allInOne").start();
     }
 
     private boolean runPowerShellSync(String psScript, String tag) {

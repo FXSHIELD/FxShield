@@ -1,4 +1,4 @@
-package fxShield.UI;
+package fx.shield.cs.UI;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -11,6 +11,27 @@ import javafx.scene.text.Font;
 import java.text.DecimalFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * A card component that displays a metric with a percentage value and progress bar.
+ *
+ * <p>This card is used for displaying system metrics like CPU, RAM, and GPU usage.
+ * It features:
+ * <ul>
+ *   <li>Title label (e.g., "CPU Usage")</li>
+ *   <li>Large percentage value display</li>
+ *   <li>Progress bar with color-coded accent (green/orange/red based on usage)</li>
+ *   <li>Extra information label (e.g., "4 cores, 8 threads")</li>
+ *   <li>Automatic color changes based on usage thresholds</li>
+ *   <li>Compact mode support for smaller layouts</li>
+ *   <li>Thread-safe updates with UI coalescing to prevent backlog</li>
+ * </ul>
+ *
+ * <p>Thread-safe: Can be updated from background threads. Updates are automatically
+ * coalesced to prevent UI backlog when called rapidly.
+ *
+ * @see BaseCard
+ * @since 1.0
+ */
 public final class MeterCard extends BaseCard {
 
     private static final DecimalFormat DF = new DecimalFormat("0.0");
@@ -41,6 +62,12 @@ public final class MeterCard extends BaseCard {
     private String lastValueText = null;
     private String lastExtraText = null;
 
+    /**
+     * Creates a new meter card with the specified title.
+     *
+     * @param titleText the title to display (e.g., "CPU Usage")
+     * @throws IllegalArgumentException if titleText is null
+     */
     public MeterCard(String titleText) {
         if (titleText == null) throw new IllegalArgumentException("titleText cannot be null");
 
@@ -84,11 +111,32 @@ public final class MeterCard extends BaseCard {
     @Override
     public VBox getRoot() { return root; }
 
+    /**
+     * Returns the title label for direct manipulation if needed.
+     *
+     * @return the title label
+     */
     public Label getTitleLabel() { return titleLabel; }
 
-    // Safe single-entry update:
-    // - If called from FX thread: updates immediately
-    // - If called from background thread: coalesces updates (keeps latest only)
+    /**
+     * Updates the card with a new percentage value and extra information.
+     *
+     * <p>This method is thread-safe:
+     * <ul>
+     *   <li>If called from FX thread: updates immediately</li>
+     *   <li>If called from background thread: coalesces updates (keeps latest only)</li>
+     * </ul>
+     *
+     * <p>The progress bar color automatically changes based on usage:
+     * <ul>
+     *   <li>0-59%: Primary color (purple)</li>
+     *   <li>60-84%: Warning color (orange)</li>
+     *   <li>85-100%: Danger color (red)</li>
+     * </ul>
+     *
+     * @param percent the usage percentage (0-100)
+     * @param extraText additional information to display below the progress bar
+     */
     public void setValuePercent(double percent, String extraText) {
         if (Platform.isFxApplicationThread()) {
             applyValue(clamp(percent, 0, 100), extraText);
@@ -97,10 +145,22 @@ public final class MeterCard extends BaseCard {
         }
     }
 
+    /**
+     * Updates the card with a new percentage value.
+     *
+     * @param percent the usage percentage (0-100)
+     */
     public void setValuePercent(double percent) {
         setValuePercent(percent, "");
     }
 
+    /**
+     * Asynchronously updates the card from a background thread.
+     * Updates are coalesced to prevent UI backlog.
+     *
+     * @param percent the usage percentage (0-100)
+     * @param extraText additional information to display
+     */
     public void setValuePercentAsync(double percent, String extraText) {
         pendingPercent = percent;
         pendingExtra = (extraText != null) ? extraText : "";
@@ -115,6 +175,11 @@ public final class MeterCard extends BaseCard {
         });
     }
 
+    /**
+     * Sets the card to display an unavailable state.
+     *
+     * @param message the message to display (e.g., "GPU not supported")
+     */
     public void setUnavailable(String message) {
         Runnable r = () -> {
             setTextIfChanged(valueLabel, "N/A", true);

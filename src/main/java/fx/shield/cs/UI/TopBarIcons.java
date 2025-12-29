@@ -1,6 +1,6 @@
-package fxShield.UI;
+package fx.shield.cs.UI;
 
-import fxShield.WIN.WindowsUtils;
+import fx.shield.cs.WIN.WindowsUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;

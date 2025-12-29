@@ -1,9 +1,31 @@
-package fxShield.GPU;
+package fx.shield.cs.GPU;
 
 import com.sun.jna.*;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 
+/**
+ * GPU usage provider using Windows Performance Data Helper (PDH) API.
+ *
+ * <p>This provider uses the native Windows PDH library to read GPU utilization
+ * from performance counters. It works with all GPU vendors on Windows.
+ *
+ * <p>Features:
+ * <ul>
+ *   <li>Uses native Windows performance counters</li>
+ *   <li>Supports all GPU vendors (NVIDIA, AMD, Intel)</li>
+ *   <li>Expands wildcard counters to monitor all GPU engines</li>
+ *   <li>Aggregates utilization across all GPU engines</li>
+ *   <li>Requires warmup period for accurate rate-based counters</li>
+ * </ul>
+ *
+ * <p>Counter path: {@code \\GPU Engine(*)\\Utilization Percentage}
+ *
+ * <p>Thread-safe: Uses synchronized blocks for query operations.
+ *
+ * @see GpuUsageProvider
+ * @since 1.0
+ */
 public final class PdhGpuUsageProvider implements GpuUsageProvider {
 
     private interface Pdh extends Library {

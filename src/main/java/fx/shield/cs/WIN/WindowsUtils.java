@@ -1,4 +1,4 @@
-package fxShield.WIN;
+package fx.shield.cs.WIN;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;

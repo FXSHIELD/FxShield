@@ -1,8 +1,34 @@
-package fxShield.GPU;
+package fx.shield.cs.GPU;
 
 import com.sun.jna.*;
 import com.sun.jna.ptr.PointerByReference;
 
+/**
+ * GPU usage provider using NVIDIA Management Library (NVML).
+ *
+ * <p>This provider uses the native NVML library to read GPU utilization
+ * directly from NVIDIA GPUs. It is the fastest and most accurate method
+ * for NVIDIA hardware.
+ *
+ * <p>Features:
+ * <ul>
+ *   <li>Direct access to NVIDIA GPU metrics via native library</li>
+ *   <li>Shared NVML initialization across multiple instances (reference counting)</li>
+ *   <li>Automatic cleanup when all instances are closed</li>
+ *   <li>Reads from first GPU (index 0) by default</li>
+ * </ul>
+ *
+ * <p>Requirements:
+ * <ul>
+ *   <li>NVIDIA GPU with driver installed</li>
+ *   <li>nvml.dll (Windows) or libnvidia-ml.so (Linux) must be available</li>
+ * </ul>
+ *
+ * <p>Thread-safe: Uses synchronized blocks for NVML lifecycle management.
+ *
+ * @see GpuUsageProvider
+ * @since 1.0
+ */
 public final class NvmlGpuUsageProvider implements GpuUsageProvider {
 
     private interface Nvml extends Library {

@@ -1,5 +1,32 @@
-package fxShield.GPU;
+package fx.shield.cs.GPU;
 
+/**
+ * Hybrid GPU usage provider that automatically selects the best available monitoring method.
+ *
+ * <p>This provider implements a fallback chain with the following priority:
+ * <ol>
+ *   <li><b>NVML</b> - NVIDIA Management Library (fastest, NVIDIA GPUs only)</li>
+ *   <li><b>PDH</b> - Windows Performance Data Helper (native Windows counters)</li>
+ *   <li><b>TypePerf</b> - Windows typeperf command-line tool (slowest, most compatible)</li>
+ * </ol>
+ *
+ * <p>Features:
+ * <ul>
+ *   <li>Automatic provider selection based on availability</li>
+ *   <li>Caches the working provider for fast subsequent reads</li>
+ *   <li>Cooldown period (1.5s) after provider failures to avoid thrashing</li>
+ *   <li>Lazy initialization - providers are only created when needed</li>
+ *   <li>Automatic failover if the active provider stops working</li>
+ * </ul>
+ *
+ * <p>Thread-safe: Uses volatile fields and synchronized initialization.
+ *
+ * @see GpuUsageProvider
+ * @see NvmlGpuUsageProvider
+ * @see PdhGpuUsageProvider
+ * @see TypeperfGpuUsageProvider
+ * @since 1.0
+ */
 public final class HybridGpuUsageProvider implements GpuUsageProvider {
 
     // small cooldown to avoid thrashing when a provider transiently fails
@@ -22,10 +49,28 @@ public final class HybridGpuUsageProvider implements GpuUsageProvider {
 
     private volatile boolean closed = false;
 
+    /**
+     * Creates a new hybrid GPU usage provider.
+     *
+     * @param isWindows true if running on Windows (required for GPU monitoring)
+     */
     public HybridGpuUsageProvider(boolean isWindows) {
         this.isWindows = isWindows;
     }
 
+    /**
+     * Reads the current GPU usage percentage using the best available provider.
+     *
+     * <p>This method:
+     * <ul>
+     *   <li>First tries the cached active provider (fast path)</li>
+     *   <li>Falls back through the provider chain if the active provider fails</li>
+     *   <li>Respects cooldown periods to avoid repeated failed attempts</li>
+     *   <li>Caches the first successful provider for future reads</li>
+     * </ul>
+     *
+     * @return GPU usage 0-100, or -1 if unavailable or not on Windows
+     */
     @Override
     public int readGpuUsagePercent() {
         if (closed || !isWindows) return -1;

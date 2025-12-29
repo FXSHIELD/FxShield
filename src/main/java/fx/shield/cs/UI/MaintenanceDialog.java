@@ -1,6 +1,6 @@
-package fxShield.UI;
+package fx.shield.cs.UI;
 
-import fxShield.DB.RemoteConfig;
+import fx.shield.cs.DB.RemoteConfig;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;

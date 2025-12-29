@@ -1,5 +1,5 @@
 // FILE: src/fxShield/DISK/PhysicalDiskSwitcher.java
-package fxShield.DISK;
+package fx.shield.cs.DISK;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;

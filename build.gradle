@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 group = 'fx.shield.cs'
@@ -9,10 +11,32 @@ repositories {
     mavenCentral()
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+javafx {
+    version = '21.0.4'
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
 dependencies {
+    implementation 'com.google.code.gson:gson:2.11.0'
+    implementation 'net.java.dev.jna:jna:5.15.0'
+    implementation 'net.java.dev.jna:jna-platform:5.15.0'
+    implementation 'com.github.oshi:oshi-core-java11:6.9.1'
+    implementation 'org.slf4j:slf4j-api:2.0.7'
+    runtimeOnly 'org.slf4j:slf4j-simple:2.0.7'
+
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+application {
+    mainClass = 'fx.shield.cs.UX.DashBoardPage'
 }
 
 test {

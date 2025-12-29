@@ -1,7 +1,7 @@
-package fxShield.UI;
+package fx.shield.cs.UI;
 
-import fxShield.WIN.AutomationService;
-import fxShield.WIN.FxSettings;
+import fx.shield.cs.WIN.AutomationService;
+import fx.shield.cs.WIN.FxSettings;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
