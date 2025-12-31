@@ -673,9 +673,6 @@ public final class DashBoardPage extends Application {
             case FREE_RAM -> s = cfg.getFreeRamScript();
             case OPTIMIZE_DISK -> s = cfg.getOptimizeDiskScript();
             case OPTIMIZE_NETWORK -> s = cfg.getOptimizeNetworkScript();
-            case PERFORMANCE_MODE -> s = cfg.getPerformanceModeScript();
-            case BALANCED_MODE -> s = cfg.getBalancedModeScript();
-            case QUIT_MODE -> s = cfg.getQuitModeScript();
             case SCAN_AND_FIX -> s = cfg.getScanAndFixScript();
             default -> s = null;
         }
@@ -827,7 +824,7 @@ public final class DashBoardPage extends Application {
         }, "fx.shield.cs-db-allInOne").start();
     }
 
-    private boolean runPowerShellSync(String psScript, String tag) {
+    public static boolean runPowerShellSync(String psScript, String tag) {
         Process p = null;
         try {
             ProcessBuilder pb = new ProcessBuilder(
@@ -930,9 +927,6 @@ public final class DashBoardPage extends Application {
         FREE_RAM,
         OPTIMIZE_DISK,
         OPTIMIZE_NETWORK,
-        PERFORMANCE_MODE,
-        BALANCED_MODE,
-        QUIT_MODE,
         SCAN_AND_FIX
     }
 }

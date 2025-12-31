@@ -61,14 +61,11 @@ public final class RemoteConfigService {
     private static final String F_FREE_RAM   = "FreeRam_Script";
     private static final String F_DISK       = "OptimizeDisk_Script";
     private static final String F_NET        = "OptimizeNetwork_Script";
+    private static final String F_SCAN_FIX   = "ScanAndFix_Script";
+
     private static final String F_PERF       = "PerformanceMode_Script";
     private static final String F_BAL        = "BalancedMode_Script";
-
-    // ✅ Support BOTH names (old typo + correct quiet)
     private static final String F_QUIET      = "QuietMode_Script";
-    private static final String F_QUIT_LEGACY= "QuitMode_Script";
-
-    private static final String F_SCAN_FIX   = "ScanAndFix_Script";
 
     private final HttpClient httpClient;
     private final String configUrl;
@@ -175,16 +172,11 @@ public final class RemoteConfigService {
                 cfg.setFreeRamScript(getString(fields, F_FREE_RAM));
                 cfg.setOptimizeDiskScript(getString(fields, F_DISK));
                 cfg.setOptimizeNetworkScript(getString(fields, F_NET));
+                cfg.setScanAndFixScript(getString(fields, F_SCAN_FIX));
+
                 cfg.setPerformanceModeScript(getString(fields, F_PERF));
                 cfg.setBalancedModeScript(getString(fields, F_BAL));
-
-                // ✅ Quiet script: prefer correct key, fallback to legacy typo
-                cfg.setQuietModeScript(firstNonBlank(
-                        getString(fields, F_QUIET),
-                        getString(fields, F_QUIT_LEGACY)
-                ));
-
-                cfg.setScanAndFixScript(getString(fields, F_SCAN_FIX));
+                cfg.setQuietModeScript(getString(fields, F_QUIET));
 
                 resp.headers().firstValue("etag").ifPresent(tag -> this.cachedEtag = tag);
                 this.cachedConfig = cfg;

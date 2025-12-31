@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2024
+## [1.0.0] - 2025
 
 ### Added
 
@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CPU usage monitoring with dual-EMA smoothing
 - RAM usage tracking with detailed statistics
 - GPU usage monitoring with multi-provider support
-- Physical and logical disk monitoring
+- Physical disk monitoring
 - Disk I/O statistics (read/write speeds)
 
 #### GPU Monitoring

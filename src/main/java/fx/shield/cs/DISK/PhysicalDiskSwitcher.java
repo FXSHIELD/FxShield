@@ -1,11 +1,10 @@
 // FILE: src/fxShield/DISK/PhysicalDiskSwitcher.java
 package fx.shield.cs.DISK;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
+import fx.shield.cs.UI.StyleConstants;
+import javafx.animation.*;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Node;
@@ -14,14 +13,75 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 
 import java.util.function.IntConsumer;
 
-public final class PhysicalDiskSwitcher {
+public final class  PhysicalDiskSwitcher {
 
     // (we will generate pill style dynamically to keep padding/border consistent per size)
+    // ===== Accent from app palette (بدّلها لـ COLOR_AMBER إذا بدك ذهبي) =====
+    private static final int[] ACCENT_RGB = hexToRgb(StyleConstants.COLOR_PRIMARY);
+
+    private static String rgba(int r, int g, int b, double a) {
+        return String.format(java.util.Locale.US, "rgba(%d,%d,%d,%.3f)", r, g, b, a);
+    }
+    private static String accent(double a) {
+        return rgba(ACCENT_RGB[0], ACCENT_RGB[1], ACCENT_RGB[2], a);
+    }
+    private static int[] hexToRgb(String hex) {
+        if (hex == null) return new int[]{167, 139, 250}; // fallback قريب من primary
+        String h = hex.trim();
+        if (h.startsWith("#")) h = h.substring(1);
+        if (h.length() != 6) return new int[]{167, 139, 250};
+        int r = Integer.parseInt(h.substring(0, 2), 16);
+        int g = Integer.parseInt(h.substring(2, 4), 16);
+        int b = Integer.parseInt(h.substring(4, 6), 16);
+        return new int[]{r, g, b};
+    }
+
+    // ====== Row styles (مثل search-result-item) ======
+    private static final String ROW_NORMAL =
+            "-fx-background-color: rgba(11,18,36,0.55);" +
+                    "-fx-background-radius: 12;" +
+                    "-fx-padding: 12 12;" +
+                    "-fx-cursor: hand;" +
+                    "-fx-border-color: rgba(255,255,255,0.06);" +
+                    "-fx-border-width: 1;" +
+                    "-fx-border-radius: 12;";
+
+    private static final String ROW_HOVER =
+            "-fx-background-color: rgba(15,23,42,0.75);" +
+                    "-fx-background-radius: 12;" +
+                    "-fx-padding: 12 12;" +
+                    "-fx-cursor: hand;" +
+                    "-fx-border-color: " + accent(0.35) + ";" +
+                    "-fx-border-width: 1;" +
+                    "-fx-border-radius: 12;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 26, 0.25, 0, 10);";
+
+    private static final String ROW_SELECTED =
+            "-fx-background-color: linear-gradient(to right, " + accent(0.22) + ", " + accent(0.12) + ");" +
+                    "-fx-background-radius: 12;" +
+                    "-fx-padding: 12 12;" +
+                    "-fx-cursor: hand;" +
+                    "-fx-border-color: " + accent(0.60) + ";" +
+                    "-fx-border-width: 1.2;" +
+                    "-fx-border-radius: 12;" +
+                    "-fx-effect: dropshadow(gaussian, " + accent(0.22) + ", 14, 0.25, 0, 0);";
+
+    private static final String TXT =
+            "-fx-text-fill: " + StyleConstants.COLOR_TEXT_WHITE + ";" +
+                    "-fx-font-size: 13;" +
+                    "-fx-font-weight: 700;";
+
+    private static final String CHECK_MARK =
+            "-fx-text-fill: " + StyleConstants.COLOR_PRIMARY + ";" +
+                    "-fx-font-size: 15;" +
+                    "-fx-font-weight: 900;";
+
     private static final String MENU_CARD =
             "-fx-background-color: rgba(15, 23, 42, 0.96);" +
                     "-fx-background-radius: 16;" +
@@ -36,40 +96,6 @@ public final class PhysicalDiskSwitcher {
                     "-fx-padding: 0;" +
                     "-fx-border-width: 0;" +
                     "-fx-border-color: transparent;";
-    private static final String ROW_NORMAL =
-            "-fx-background-color: transparent;" +
-                    "-fx-background-radius: 10;" +
-                    "-fx-padding: 8 12;" +
-                    "-fx-cursor: hand;" +
-                    "-fx-border-color: transparent;" +
-                    "-fx-border-width: 2;" +
-                    "-fx-border-radius: 10;";
-    private static final String ROW_HOVER =
-            "-fx-background-color: rgba(255, 255, 255, 0.12);" +
-                    "-fx-background-radius: 10;" +
-                    "-fx-padding: 8 12;" +
-                    "-fx-cursor: hand;" +
-                    "-fx-border-color: rgba(255, 255, 255, 0.15);" +
-                    "-fx-border-width: 2;" +
-                    "-fx-border-radius: 10;" +
-                    "-fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.4), 10, 0, 0, 0);";
-    private static final String ROW_SELECTED =
-            "-fx-background-color: linear-gradient(to right, rgba(59, 130, 246, 0.5), rgba(99, 102, 241, 0.5));" +
-                    "-fx-background-radius: 10;" +
-                    "-fx-padding: 8 12;" +
-                    "-fx-border-color: rgba(59, 130, 246, 0.8);" +
-                    "-fx-border-width: 2;" +
-                    "-fx-border-radius: 10;" +
-                    "-fx-cursor: hand;" +
-                    "-fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.3), 15, 0, 0, 0);";
-    private static final String TXT =
-            "-fx-text-fill: rgba(226, 232, 240, 1);" +
-                    "-fx-font-size: 13;" +
-                    "-fx-font-weight: 500;";
-    private static final String CHECK_MARK =
-            "-fx-text-fill: #3b82f6;" +
-                    "-fx-font-size: 15;" +
-                    "-fx-font-weight: 900;";
     private final HBox root;
     private final Button pill;
     private final HBox pillContent;
@@ -296,26 +322,55 @@ public final class PhysicalDiskSwitcher {
             item.getStyleClass().add("custom-menu-item");
             item.setHideOnClick(true);
 
+            // بدل CustomMenuItem(row, true) مباشرة
+            StackPane wrap = new StackPane(row);
+            wrap.setPadding(new Insets(6));              // مساحة للظل حتى ما ينقص
+            wrap.setStyle("-fx-background-color: transparent;");
+            wrap.setPickOnBounds(true);
+            wrap.setMinWidth(232);
+            wrap.setMaxWidth(Double.MAX_VALUE);
+
+// hover/exit على الـ wrap (مو row) + translateY بدل scale
+            wrap.setOnMouseEntered(e -> {
+                if (idx != selected) {
+                    row.setStyle(ROW_HOVER);
+                    check.setOpacity(0.4);
+                }
+                lift(wrap, -2);
+            });
+
+            wrap.setOnMouseExited(e -> {
+                if (idx != selected) {
+                    row.setStyle(ROW_NORMAL);
+                    check.setOpacity(0.0);
+                } else {
+                    row.setStyle(ROW_SELECTED);
+                    check.setOpacity(1.0);
+                }
+                lift(wrap, 0);
+            });
+
+            wrap.setOnMousePressed(e -> lift(wrap, -1));
+            wrap.setOnMouseReleased(e -> lift(wrap, wrap.isHover() ? -2 : 0));
+
+
             row.setOnMouseEntered(e -> {
                 if (idx != selected) {
                     row.setStyle(ROW_HOVER);
                     check.setOpacity(0.4);
                 }
-                ScaleTransition st2 = new ScaleTransition(Duration.millis(100), row);
-                st2.setToX(1.02);
-                st2.setToY(1.02);
-                st2.play();
+                lift(row, -2); // نفس translateY(-2px)
             });
 
             row.setOnMouseExited(e -> {
                 if (idx != selected) {
                     row.setStyle(ROW_NORMAL);
                     check.setOpacity(0.0);
+                } else {
+                    row.setStyle(ROW_SELECTED);
+                    check.setOpacity(1.0);
                 }
-                ScaleTransition st2 = new ScaleTransition(Duration.millis(100), row);
-                st2.setToX(1.0);
-                st2.setToY(1.0);
-                st2.play();
+                lift(row, 0);
             });
 
             row.setOnMousePressed(e -> {
@@ -438,4 +493,16 @@ public final class PhysicalDiskSwitcher {
         selected = clamp(idx, 0, count - 1);
         refresh();
     }
+
+    private static void lift(Node node, double toY) {
+        Object prev = node.getProperties().get("liftTT");
+        if (prev instanceof TranslateTransition tt) tt.stop();
+
+        TranslateTransition tt = new TranslateTransition(Duration.millis(180), node);
+        tt.setToY(toY);
+        tt.setInterpolator(Interpolator.EASE_OUT);
+        node.getProperties().put("liftTT", tt);
+        tt.play();
+    }
+
 }

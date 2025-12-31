@@ -1,9 +1,13 @@
 package fx.shield.cs.UI;
 
+import fx.shield.cs.DB.RemoteConfig;
+import fx.shield.cs.DB.RemoteConfigService;
+import fx.shield.cs.UX.DashBoardPage;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -21,16 +25,26 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-import java.util.prefs.Preferences;
+import java.util.Locale;
 import java.util.function.Consumer;
+import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 
 public final class PowerModeDialog {
 
     private PowerModeDialog() {}
 
+    private static final Pattern EAP_BAD =
+            Pattern.compile("(?im)^\\s*\\$ErrorActionPreference\\s*=\\s*(SilentlyContinue|Continue|Stop|Inquire)\\s*;?\\s*$");
+
+    private final RemoteConfigService configService = new RemoteConfigService();
+
     private enum PowerMode { PERFORMANCE, BALANCED, QUIET }
 
     private static final String PREF_KEY_POWER_MODE = "powerMode";
+
+    /** owner stage (used by Loading/Maintenance dialogs) */
+    private Stage primaryStage;
 
     // ===== Fonts (avoid CSS font-weight bugs) =====
     private static final Font FONT_TITLE = Font.font("Segoe UI", FontWeight.EXTRA_BOLD, 18);
@@ -118,7 +132,12 @@ public final class PowerModeDialog {
                     "-fx-stroke-linecap: round; -fx-stroke-linejoin: round;";
 
     public static void show(Stage owner) {
-        PowerMode currentMode = loadSavedMode();
+        // last saved (we will revert to this if applying fails)
+        final PowerMode[] lastGoodMode = { loadSavedMode() };
+
+        // instance for DB/script execution
+        PowerModeDialog self = new PowerModeDialog();
+        self.primaryStage = owner;
 
         Stage dialog = new Stage();
         if (owner != null) dialog.initOwner(owner);
@@ -192,7 +211,7 @@ public final class PowerModeDialog {
 
         ModeCard[] cards = { performance, balanced, quiet };
 
-        // unified selector (fixes keyboard + mouse selection)
+        // unified selector (keyboard + mouse)
         Consumer<ModeCard> select = sel -> setSelected(cards, sel);
 
         for (ModeCard c : cards) {
@@ -212,23 +231,48 @@ public final class PowerModeDialog {
             });
         }
 
-        // apply initial selection
-        for (ModeCard c : cards) {
-            if (c.mode == currentMode) {
-                select.accept(c);
-                break;
-            }
-        }
+        // initial selection = last saved
+        ModeCard initial = findCardByMode(cards, lastGoodMode[0]);
+        if (initial != null) select.accept(initial);
 
         VBox modesBox = new VBox(12, performance, balanced, quiet);
         modesBox.setPadding(new Insets(20, 0, 10, 0));
         root.setCenter(modesBox);
 
-        // Apply action persists current selection
+        // Apply: run script -> if OK save+close, else revert selection and DON'T save
         applyBtn.setOnAction(e -> {
             ModeCard selected = getSelected(cards);
-            if (selected != null) saveMode(selected.mode);
-            dialog.close();
+            if (selected == null) return;
+
+            PowerMode requested = selected.mode;
+
+            // if same as last good, just close
+            if (requested == lastGoodMode[0]) {
+                dialog.close();
+                return;
+            }
+
+            setBusy(cancelBtn, applyBtn, true);
+
+            self.runDbScriptAsync(requested, "power-mode", ok -> {
+                // back to UI thread
+                Platform.runLater(() -> {
+                    setBusy(cancelBtn, applyBtn, false);
+
+                    if (ok) {
+                        saveMode(requested);
+                        lastGoodMode[0] = requested;
+                        dialog.close();
+                    } else {
+                        // revert UI selection back to previous
+                        ModeCard prev = findCardByMode(cards, lastGoodMode[0]);
+                        if (prev != null) select.accept(prev);
+
+                        // optional: update subtitle to indicate failure (keeps dialog open)
+                        sub.setText("Failed to apply. Reverted to previous mode.");
+                    }
+                });
+            });
         });
 
         // ===== Scene + keyboard =====
@@ -259,6 +303,18 @@ public final class PowerModeDialog {
         );
         popIn.setInterpolator(Interpolator.EASE_OUT);
         popIn.play();
+    }
+
+    private static void setBusy(Button cancelBtn, Button applyBtn, boolean busy) {
+        cancelBtn.setDisable(busy);
+        applyBtn.setDisable(busy);
+    }
+
+    private static ModeCard findCardByMode(ModeCard[] cards, PowerMode mode) {
+        for (ModeCard c : cards) {
+            if (c.mode == mode) return c;
+        }
+        return null;
     }
 
     private static void setSelected(ModeCard[] cards, ModeCard selected) {
@@ -353,7 +409,6 @@ public final class PowerModeDialog {
 
             getChildren().addAll(header, desc);
 
-            // keyboard select (FIX: selects through dialog selector, not local)
             setOnKeyPressed(e -> {
                 if (e.getCode() == KeyCode.SPACE || e.getCode() == KeyCode.ENTER) {
                     if (onSelect != null) onSelect.accept(this);
@@ -383,5 +438,105 @@ public final class PowerModeDialog {
         }
 
         boolean isSelected() { return selected; }
+    }
+
+    // ===== Script handling =====
+
+    private String getScriptFromConfig(RemoteConfig cfg, PowerMode mode) {
+        if (cfg == null || mode == null) return null;
+
+        String s = switch (mode) {
+            case PERFORMANCE -> cfg.getPerformanceModeScript();
+            case BALANCED -> cfg.getBalancedModeScript();
+            case QUIET -> cfg.getQuietModeScript();
+        };
+        return normalizeScript(s);
+    }
+
+    private String normalizeScript(String s) {
+        if (s == null) return null;
+
+        String t = s.trim();
+        if (t.isEmpty()) return null;
+
+        // fix common format mistake
+        t = EAP_BAD.matcher(t).replaceAll("$ErrorActionPreference = '$1'");
+
+        String low = t.toLowerCase(Locale.ROOT);
+        if (!low.contains("$erroractionpreference")) {
+            t = "$ErrorActionPreference = 'SilentlyContinue'\n" + t;
+        }
+        return t;
+    }
+
+    /** Runs DB script async and calls callback with success/fail on background completion */
+    private void runDbScriptAsync(PowerMode mode, String logTag, Consumer<Boolean> onFinished) {
+        // show loading on FX thread
+        LoadingDialog loading = LoadingDialog.show(
+                primaryStage,
+                "Applying Power Mode",
+                "Fetching latest script from server...",
+                false
+        );
+
+        Thread t = new Thread(() -> {
+            boolean ok = false;
+
+            try {
+                RemoteConfig cfg = fetchLatestConfigSafe();
+                if (cfg == null) {
+                    loading.setFailed("Can't reach server. Check your connection.");
+                    finish(onFinished, false);
+                    return;
+                }
+
+                if (cfg.isMaintenance()) {
+                    loading.setFailed("Service is under maintenance.");
+                    Platform.runLater(() ->
+                            MaintenanceDialog.show(primaryStage, cfg, configService::fetchConfig, okCfg -> {})
+                    );
+                    finish(onFinished, false);
+                    return;
+                }
+
+                String script = getScriptFromConfig(cfg, mode);
+                if (script == null) {
+                    loading.setFailed("No script found for " + mode.name() + " mode.");
+                    finish(onFinished, false);
+                    return;
+                }
+
+                loading.setMessageText("Applying " + mode.name().toLowerCase(Locale.ROOT) + " mode...");
+
+                ok = DashBoardPage.runPowerShellSync(script, logTag);
+
+                if (ok) loading.setDone("Power mode applied successfully.");
+                else loading.setFailed("Failed to apply power mode.");
+
+            } catch (Exception ex) {
+                loading.setFailed("Unexpected error: " + ex.getMessage());
+                ok = false;
+            }
+
+            finish(onFinished, ok);
+
+        }, "fx.shield.cs-db-" + mode.name());
+
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private static void finish(Consumer<Boolean> cb, boolean ok) {
+        if (cb == null) return;
+        // ensure callback runs safely
+        Platform.runLater(() -> cb.accept(ok));
+    }
+
+    private RemoteConfig fetchLatestConfigSafe() {
+        try {
+            return configService.fetchConfig();
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

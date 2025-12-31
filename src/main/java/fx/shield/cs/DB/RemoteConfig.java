@@ -12,7 +12,7 @@ public final class RemoteConfig implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    // Application status and version info
+    //? Application status and version info
     private String appStatus;
     private String latestVersion;
     private String minVersion;
@@ -20,32 +20,23 @@ public final class RemoteConfig implements Serializable {
     private String updateMessage;
     private boolean forceUpdate;
 
-    // PowerShell scripts for system optimization
+    //? PowerShell scripts for system optimization
     private String freeRamScript;
     private String optimizeDiskScript;
     private String optimizeNetworkScript;
+    private String scanAndFixScript;
+
+    //? Modes Scriot in the app
+    private String quietModeScript;
     private String performanceModeScript;
     private String balancedModeScript;
-
-    // ✅ Fix: QUIET (not QUIT)
-    // Keep backward compatibility with older payloads/field names.
-    private String quietModeScript;
-    private String quitModeScript; // legacy alias (old typo)
-
-    private String scanAndFixScript;
 
     public RemoteConfig() {
     }
 
     // =========================================================================
-    // Application Status and Version Methods
+    // ? Application Status and Version Methods
     // =========================================================================
-
-    private static String trimOrNull(String s) {
-        if (s == null) return null;
-        String t = s.trim();
-        return t.isEmpty() ? null : t;
-    }
 
     public String getAppStatus() {
         return appStatus;
@@ -96,108 +87,88 @@ public final class RemoteConfig implements Serializable {
     }
 
     /**
-     * @return true if appStatus is "maintenance"
-     */
-    public boolean isMaintenance() {
-        return appStatus != null && appStatus.equalsIgnoreCase("maintenance");
-    }
-
-    // =========================================================================
-    // Script Accessor Methods
-    // =========================================================================
-
-    /**
      * @return true if appStatus is null or "online"
      */
+
     public boolean isOnline() {
-        return appStatus == null || appStatus.equalsIgnoreCase("online");
+        return appStatus != null && appStatus.equalsIgnoreCase("online");
     }
+
+    /**
+     *  @return true if appStatus is "maintenance"
+     */
+    public boolean isMaintenance() {
+        return appStatus != null && appStatus.equalsIgnoreCase("maintenance") && !appStatus.equalsIgnoreCase("online");
+    }
+
+    // =========================================================================
+    // ? Script Accessor Methods
+    // =========================================================================
 
     public String getFreeRamScript() {
         return freeRamScript;
     }
 
-    public void setFreeRamScript(String v) {
-        this.freeRamScript = trimOrNull(v);
+    public void setFreeRamScript(String FreeRamScript) {
+        this.freeRamScript = trimOrNull(FreeRamScript);
     }
 
     public String getOptimizeDiskScript() {
         return optimizeDiskScript;
     }
 
-    public void setOptimizeDiskScript(String v) {
-        this.optimizeDiskScript = trimOrNull(v);
+    public void setOptimizeDiskScript(String OptimizeDiskScript) {
+        this.optimizeDiskScript = trimOrNull(OptimizeDiskScript);
     }
 
     public String getOptimizeNetworkScript() {
         return optimizeNetworkScript;
     }
 
-    public void setOptimizeNetworkScript(String v) {
-        this.optimizeNetworkScript = trimOrNull(v);
-    }
-
-    public String getPerformanceModeScript() {
-        return performanceModeScript;
-    }
-
-    public void setPerformanceModeScript(String v) {
-        this.performanceModeScript = trimOrNull(v);
-    }
-
-    public String getBalancedModeScript() {
-        return balancedModeScript;
-    }
-
-    public void setBalancedModeScript(String v) {
-        this.balancedModeScript = trimOrNull(v);
-    }
-
-    /**
-     * ✅ Correct getter: Quiet Mode script.
-     */
-    public String getQuietModeScript() {
-        String q = trimOrNull(quietModeScript);
-        if (q != null) return q;
-        return trimOrNull(quitModeScript); // legacy
-    }
-
-    /**
-     * ✅ Correct setter: Quiet Mode script.
-     */
-    public void setQuietModeScript(String v) {
-        String t = trimOrNull(v);
-        this.quietModeScript = t;
-        this.quitModeScript = t; // keep legacy in sync
-    }
-
-    /**
-     * ⚠ Legacy typo support (backward compatibility).
-     * Prefer getQuietModeScript()/setQuietModeScript().
-     */
-    @Deprecated
-    public String getQuitModeScript() {
-        return getQuietModeScript();
-    }
-
-    /**
-     * ⚠ Legacy typo support (backward compatibility).
-     * Prefer getQuietModeScript()/setQuietModeScript().
-     */
-    @Deprecated
-    public void setQuitModeScript(String v) {
-        setQuietModeScript(v);
+    public void setOptimizeNetworkScript(String OptimizeNetworkScript) {
+        this.optimizeNetworkScript = trimOrNull(OptimizeNetworkScript);
     }
 
     public String getScanAndFixScript() {
         return scanAndFixScript;
     }
 
+    public void setScanAndFixScript(String ScanAndFixScript) {
+        this.scanAndFixScript = trimOrNull(ScanAndFixScript);
+    }
+
+    public String getBalancedModeScript() {
+        return balancedModeScript;
+    }
+
+    public void setBalancedModeScript(String BalancedModeScript) {
+        this.balancedModeScript = trimOrNull(BalancedModeScript);
+    }
+
+
+    public String getQuietModeScript() {
+        return quietModeScript;
+    }
+
+    public void setQuietModeScript(String QuietModeScript) {
+        this.quietModeScript = trimOrNull(QuietModeScript);
+    }
+
+    public String getPerformanceModeScript() {
+        return performanceModeScript;
+    }
+
+    public void setPerformanceModeScript(String PerformanceModeScript) {
+        this.performanceModeScript = trimOrNull(PerformanceModeScript);
+    }
+
     // =========================================================================
     // Utility Methods
     // =========================================================================
 
-    public void setScanAndFixScript(String v) {
-        this.scanAndFixScript = trimOrNull(v);
+    private static String trimOrNull(String input) {
+        if (input == null) return null;
+        String t = input.trim();
+        return t.isEmpty() ? null : t;
     }
 }

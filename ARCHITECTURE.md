@@ -17,19 +17,19 @@ FxShield is a JavaFX-based system monitoring and optimization application for Wi
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Presentation Layer                    │
-│              (JavaFX UI Components)                      │
+│                    Presentation Layer                   │
+│                  (JavaFX UI Components)                 │
 ├─────────────────────────────────────────────────────────┤
-│                    Application Layer                     │
+│                    Application Layer                    │
 │         (DashBoardPage, Dialogs, Controllers)           │
 ├─────────────────────────────────────────────────────────┤
-│                     Service Layer                        │
+│                     Service Layer                       │
 │  (SystemMonitorService, AutomationService, RemoteConfig)│
 ├─────────────────────────────────────────────────────────┤
-│                    Provider Layer                        │
+│                    Provider Layer                       │
 │        (GPU Providers, Disk Monitors, OSHI)             │
 ├─────────────────────────────────────────────────────────┤
-│                   Integration Layer                      │
+│                   Integration Layer                     │
 │     (WindowsUtils, JNA, PowerShell, Native APIs)        │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -194,7 +194,7 @@ GpuUsageProvider (interface)
 ```
 ┌─────────────────────────────────────────────────────┐
 │  1. DashBoardPage starts                            │
-│     └─→ Fetch remote config in background          │
+│     └─→ Fetch remote config in background           │
 └─────────────────────────────────────────────────────┘
                     ↓
 ┌─────────────────────────────────────────────────────┐
@@ -658,6 +658,6 @@ autoStartWithWindows=true
 
 ---
 
-**Last Updated**: 2024
+**Last Updated**: 2025
 **Version**: 1.0
 **Maintainer**: FxShield Development Team

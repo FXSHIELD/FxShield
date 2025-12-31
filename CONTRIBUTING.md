@@ -63,13 +63,13 @@ Before you begin, ensure you have:
 1. Fork the repository on GitHub
 2. Clone your fork:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/SoftwareEngAQU.git
+   git clone https://github.com/FXSHIELD/FxShield.git
    cd SoftwareEngAQU
    ```
 
 3. Add upstream remote:
    ```bash
-   git remote add upstream https://github.com/ORIGINAL_OWNER/SoftwareEngAQU.git
+   git remote add upstream https://github.com/FXSHIELD/FxShield.git
    ```
 
 ---

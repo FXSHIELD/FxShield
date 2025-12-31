@@ -316,10 +316,10 @@ SoftwareEngAQU/
 - **Gradle**: Build automation and dependency management
 
 ### Libraries & Dependencies
-- **OSHI 6.9.1**: Operating System and Hardware Information library
-- **JNA 5.15.0**: Java Native Access for Windows API integration
-- **Gson 2.11.0**: JSON serialization/deserialization
-- **SLF4J 2.0.7**: Logging facade
+- **OSHI 6.9.2**: Operating System and Hardware Information library
+- **JNA 5.18.1**: Java Native Access for Windows API integration
+- **Gson 2.13.2**: JSON serialization/deserialization
+- **SLF4J 2.1.0-alpha1**: Logging facade
 
 ### Windows Integration
 - **JNA Platform**: Native Windows API bindings
@@ -361,7 +361,7 @@ Contributions are welcome! Please follow these guidelines:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE file](LICENSE) for details.
 
 ---
 
@@ -380,7 +380,7 @@ For issues, questions, or suggestions:
 
 - **Issues**: Open an issue on GitHub
 - **Discussions**: Use GitHub Discussions
-- **Email**: [Your contact email]
+- **Email**: fmtiger6@gmail.com
 
 ---
 
