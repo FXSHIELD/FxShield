@@ -324,7 +324,7 @@ public final class  PhysicalDiskSwitcher {
 
             // بدل CustomMenuItem(row, true) مباشرة
             StackPane wrap = new StackPane(row);
-            wrap.setPadding(new Insets(6));              // مساحة للظل حتى ما ينقص
+            wrap.setPadding(new Insets(6));
             wrap.setStyle("-fx-background-color: transparent;");
             wrap.setPickOnBounds(true);
             wrap.setMinWidth(232);
